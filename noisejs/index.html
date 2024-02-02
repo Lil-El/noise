@@ -65,7 +65,7 @@
        * All noise functions return values in the range of -1 to 1.
        * value = abs(noise) = [0, 1]
        */
-      let value = Math.abs(noise.perlin2(x / 50, y / 50)); // 数值越小看的范围越大; 数值越大范围越小
+      let value = Math.abs(noise.perlin2(x / 50, y / 50)); // 数值越小看的点越大范围越小; 数值越大饭的点越多范围越大
 
       // 颜色范围 [0-255]
       value *= 256;
@@ -104,7 +104,7 @@
       // 表示 亮度 > 125 的像素，设置红色
       let offset1 = (value - 125) * 8;
 
-      data[cell] += Math.max(0, offset1);
+      data[cell] += Math.max(0, offset0);
     }
   }
 

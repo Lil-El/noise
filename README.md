@@ -10,6 +10,25 @@
 
 需要注意的是，当 RGB 三个值不相等时，表示的是彩色色彩空间，其中每个通道的值可以独立地表示不同的饱和度和色调，从而产生更广泛的颜色范围。
 
+### 噪声图
+
+![noise image](./imgs/微信图片_20240202160244.png)
+
+```
+// noise fragment shader
+
+varying vec2 uv;
+float noise(vec2 p) {
+ // TODO
+}
+void main() {
+   float n = noise(uv);  // 通过噪声函数计算片元坐标对应噪声值
+   gl_FragColor = vec4(n, n, n, 1.0);
+}
+```
+
+> 在 noisejs 中，通过 canvas 设置 r=g=b=n, a=255
+
 ## 噪声算法返回值
 
 常见的噪声算法（如柏林噪声、简单噪声等）通常返回范围在 -1 到 1 之间的值。这个范围是一种标准化的方式，使得噪声的取值范围在正负之间均匀分布。
