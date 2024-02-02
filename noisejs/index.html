@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<title>Perlin noise</title>
+<style>
+  .centerbox {
+    /* flexbox, por favor */
+    display: -webkit-box;
+    -webkit-box-orient: horizontal;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+
+    display: -moz-box;
+    -moz-box-orient: horizontal;
+    -moz-box-pack: center;
+    -moz-box-align: center;
+
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body,
+  html {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  canvas {
+    /* border-radius: 30px;  Border radiuses don't seem to work with putImageData */
+    box-shadow: 0 0 10px #777;
+  }
+  body {
+    background-color: #7ff0ff;
+  }
+</style>
+<body>
+  <div class="centerbox"><canvas width="320" height="160"></canvas></div>
+</body>
+<script src="./perlin.js"></script>
+<script>
+  let canvas = document.getElementsByTagName("canvas")[0];
+
+  let ctx = canvas.getContext("2d");
+
+  let image = ctx.createImageData(canvas.width, canvas.height);
+
+  // 每个像素有4个值，分别是 r，g，b，a；所以 data.length = width * height * 4
+  let data = image.data;
+
+  let start = Date.now();
+
+  let min = 0,
+    max = 0;
+
+  // 注释时，默认使用内部的种子
+  // noise.seed(Math.random());
+
+  for (let x = 0; x < canvas.width; x++) {
+    // 每隔 100px 重新设置
+    // if (x % 100 == 0) {
+    // noise.seed(Math.random());
+    // }
+    for (let y = 0; y < canvas.height; y++) {
+      /**
+       * All noise functions return values in the range of -1 to 1.
+       * value = abs(noise) = [0, 1]
+       */
+      let value = Math.abs(noise.perlin2(x / 50, y / 50)); // 数值越小看的范围越大; 数值越大范围越小
+
+      // 颜色范围 [0-255]
+      value *= 256;
+
+      /**
+       * 从上至下的顺序: 计算对应像素在data中所对应的下标
+       *
+       * 如：x = 1; y = 10
+       *
+       * 该位置所在的行的上方的所有行的像素总和 + 该位置所在的行的左边的像素
+       * 即
+       * y * canvas.width                +  x
+       */
+      let cell = (x + y * canvas.width) * 4;
+
+      // 设置 r g b 通道
+      data[cell] = data[cell + 1] = data[cell + 2] = value;
+
+      // alpha. 透明度
+      data[cell + 3] = 255;
+
+      /**
+       * 如果不设置r通道，则表示噪声的亮度，噪声值越小表示颜色越暗
+       *
+       * 调整 r 通道，使噪声值越小颜色越红
+       *
+       * data[cell] 范围是 [0-255]
+       *
+       * 将亮度范围作为x轴 [0, 255](也是噪声值的范围[0, 1])中，[0, 25]设置为红色(噪声值为[0, 0.1]部分设置为红色；值越小越暗，即越红)。最红的地方则为y值，设为200
+       * 那么：x = 0时，y = 200；x = 25时，y = 0；
+       * 公式则为：y = -8x + 200 = 200 - 8x = (25 - x) * 8
+       */
+      // 表示 亮度 < 25 的像素，设置为红色
+      let offset0 = (25 - value) * 8;
+
+      // 表示 亮度 > 125 的像素，设置红色
+      let offset1 = (value - 125) * 8;
+
+      data[cell] += Math.max(0, offset1);
+    }
+  }
+
+  let end = Date.now();
+
+  ctx.putImageData(image, 0, 0);
+
+  if (console) {
+    console.log("Rendered in " + (end - start) + " ms");
+    console.log(min, max); // -1000+   200
+  }
+</script>
